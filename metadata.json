@@ -1,0 +1,6 @@
+{
+  "name": "LazyNest Quotation Builder",
+  "description": "Smart home automation touch switches and motorized curtains BOQ and quotation builder.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
