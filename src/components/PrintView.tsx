@@ -159,8 +159,11 @@ export function Dashboard({
                 </p>
               </div>
               <button
-                onClick={onNew}
-                className="px-5 py-2.5 text-xs font-bold text-black rounded-xl hover:brightness-110 shadow-md transition-all cursor-pointer"
+  onClick={() => window.print()}
+  className="px-5 py-2.5 text-xs font-bold bg-white text-black rounded-xl hover:bg-gray-100 flex items-center gap-2 cursor-pointer shadow-sm"
+>
+  <Printer className="w-4 h-4" /> Save as PDF
+</button><
                 style={{ background: TEAL }}
               >
                 <Plus className="w-4 h-4 inline mr-1" /> Create First Quotation

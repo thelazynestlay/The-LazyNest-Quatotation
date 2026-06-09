@@ -104,9 +104,12 @@ export const ROOM_PRESETS = [
 ];
 
 // LazyNest logo - beautiful white vector SVG circuit/smart-living house design matching the official logo
-export const LOGO_B64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjQuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNIDc4IDcyIEwgNzggMzggTCA1MCAxNSBMIDIyIDM4IEwgMjIgNzUgTCA3MCA3NSIvPjxwYXRoIGQ9Ik0gMzYgNjMgTCAzNiA0OSBMIDUwIDM2IEwgNjQgNDkgTCA2NCA2MyBMIDQyIDYzIi8+PGNpcmNsZSBjeD0iNzgiIGN5PSI3OCIgcj0iNC41IiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJub25lIi8+PGNpcmNsZSBjeD0iNDIiIGN5PSI2MyIgcj0iNC41IiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJub25lIi8+PC9zdmc+";
+export const LOGO_B64 = // LazyNest logo - beautiful white vector SVG circuit/smart-living house design matching the official logo
+export const LOGO_B64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTSA1NiA3MyBMIDMyIDczIEwgMzIgNTUgTCA1MCAzNyBMIDY4IDU1IEwgNjggODUgTCAyMCA4NSBMIDIwIDQ1IEwgNTAgMTUgTCA8MCA0NSBMIDgwIDg1IiAvPjxjaXJjbGUgY3g9IjU2IiBjeT0iNzMiIHI9IjQuNSIgZmlsbD0id2hpdGUiIHN0cm9rZT0ibm9uZSIgLz48Y2lyY2xlIGN4PSI4MCIgY3k9Ijg1IiByPSI0LjUiIGZpbGw9IndoaXRlIiBzdHJva2U9Im5vbmUiIC8+PC9zdmc+";
 
 export function calcCurtainCost(trackLengthFt: string | undefined): number {
   const ft = parseFloat(trackLengthFt || "0") || 0;
   return ft * CURTAIN_PER_FT + CURTAIN_TRACK_BASE + CURTAIN_MOTOR + CURTAIN_SWITCH;
 }
+
+

@@ -332,11 +332,11 @@ export function QuoteBuilder({
 
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <button
-            onClick={() => setShowPrint(true)}
-            className="flex-1 sm:flex-none justify-center items-center inline-flex gap-2 px-4 py-2 text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm transition-all cursor-pointer"
-          >
-            <Printer className="w-4 h-4" /> Live Document
-          </button>
+           onClick={() => setShowPrint(true)}
+  className="flex-1 sm:flex-none justify-center items-center inline-flex gap-2 px-4 py-2 text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm transition-all cursor-pointer"
+>
+  <Printer className="w-4 h-4" /> Save and download quote
+</button>
           <button
             onClick={handleSave}
             disabled={hasValidationErrors}
