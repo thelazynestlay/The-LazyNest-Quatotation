@@ -11,6 +11,7 @@ export interface Module {
   id: string;
   productId: number | null;
   qty: number;
+  wifiEnabled?: boolean;
 }
 
 export interface Board {

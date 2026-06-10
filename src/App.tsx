@@ -9,6 +9,7 @@ import { DEFAULT_PRODUCTS, LOGO_B64, TEAL } from "./data";
 import { Dashboard } from "./components/Dashboard";
 import { QuoteBuilder } from "./components/QuoteBuilder";
 import { AdminPanel } from "./components/AdminPanel";
+import { Logo } from "./components/Logo";
 import { ChevronRight } from "lucide-react";
 
 // Helper function to generate unique ID
@@ -193,19 +194,13 @@ export default function App() {
       {/* Dynamic Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm leading-none shrink-0">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src={LOGO_B64}
-              alt="LazyNest Brand"
-              className="h-9 w-auto filter invert"
-              style={{ objectFit: "contain" }}
-              referrerPolicy="no-referrer"
-            />
-            <div className="hidden sm:block">
+          <div className="flex items-center gap-2">
+            <Logo className="h-10 w-auto text-neutral-900" showText={false} />
+            <div className="block">
               <div className="text-sm font-black tracking-widest text-neutral-900 uppercase">
-                LazyNest
+                Lazy<span style={{ color: TEAL }}>Nest</span>
               </div>
-              <div className="text-[10px] font-extrabold tracking-widest uppercase mt-0.5" style={{ color: TEAL }}>
+              <div className="text-[9px] font-extrabold tracking-widest uppercase mt-0.5" style={{ color: TEAL }}>
                 Quotation Builder
               </div>
             </div>

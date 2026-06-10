@@ -57,9 +57,6 @@ export function QuoteBuilder({
 
   // Setup Rooms & Boards
   const [rooms, setRooms] = useState<Room[]>(initialQuote?.rooms || []);
-  const [wifiEnabled, setWifiEnabled] = useState(
-    initialQuote?.wifiEnabled !== undefined ? initialQuote.wifiEnabled : true
-  );
   const [collapsedRooms, setCollapsedRooms] = useState<Record<string, boolean>>({});
   const [showPrint, setShowPrint] = useState(false);
 
@@ -102,10 +99,11 @@ export function QuoteBuilder({
         } else {
           const moduleCosts = board.modules.map((m) => {
             const p = products.find((x) => x.id === m.productId);
+            const isWifi = p && !p.noWifi && m.wifiEnabled !== false;
             const unitPrice = p
-              ? p.noWifi || !wifiEnabled
-                ? p.price
-                : p.price + 3500
+              ? isWifi
+                ? p.price + 3500
+                : p.price
               : 0;
             return unitPrice * (m.qty || 1);
           });
@@ -143,7 +141,7 @@ export function QuoteBuilder({
     onSave({
       ...customer,
       rooms,
-      wifiEnabled,
+      wifiEnabled: true,
       grandTotal: summary.grandTotal,
       productTotal: summary.productTotal,
       installation: summary.installation,
@@ -332,11 +330,11 @@ export function QuoteBuilder({
 
         <div className="flex gap-2 flex-wrap w-full sm:w-auto">
           <button
-           onClick={() => setShowPrint(true)}
-  className="flex-1 sm:flex-none justify-center items-center inline-flex gap-2 px-4 py-2 text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm transition-all cursor-pointer"
->
-  <Printer className="w-4 h-4" /> Save and download quote
-</button>
+            onClick={() => setShowPrint(true)}
+            className="flex-1 sm:flex-none justify-center items-center inline-flex gap-2 px-4 py-2 text-xs font-bold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 rounded-xl shadow-sm transition-all cursor-pointer"
+          >
+            <Printer className="w-4 h-4" /> Save and download quote
+          </button>
           <button
             onClick={handleSave}
             disabled={hasValidationErrors}
@@ -396,50 +394,6 @@ export function QuoteBuilder({
               {customer.date}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Connectivity Mode Settings */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 md:p-6 shadow-sm space-y-4">
-        <h2 className="text-[10px] font-black uppercase tracking-widest" style={{ color: TEAL }}>
-          WIFI BOARD CONNECTIVITY
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              enable: true,
-              label: "Include Smart WiFi Integration",
-              desc: "Provides individual WiFi module controller linking Alexa, Google, and mobile applications directly without a gateway hub. (Adds ₹3500 per device, excl. accessories).",
-            },
-            {
-              enable: false,
-              label: "Analog Classic Integration",
-              desc: "Traditional Elite physical touch panels. Operates manually via responsive touch glass only without remote app capabilities.",
-            },
-          ].map((mode) => (
-            <div
-              key={String(mode.enable)}
-              onClick={() => setWifiEnabled(mode.enable)}
-              className="p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-4 select-none hover:shadow-sm"
-              style={{
-                borderColor: wifiEnabled === mode.enable ? TEAL : "#f3f4f6",
-                background: wifiEnabled === mode.enable ? `${TEAL}08` : "transparent",
-              }}
-            >
-              <div
-                className="w-4 h-4 rounded-full border-2 flex items-center justify-center mt-0.5 shrink-0"
-                style={{ borderColor: wifiEnabled === mode.enable ? TEAL : "#d1d5db" }}
-              >
-                {wifiEnabled === mode.enable && (
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: TEAL }} />
-                )}
-              </div>
-              <div className="space-y-1">
-                <div className="text-xs font-extrabold text-neutral-800 leading-none">{mode.label}</div>
-                <p className="text-[10px] leading-relaxed text-neutral-400 font-semibold">{mode.desc}</p>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -771,6 +725,26 @@ export function QuoteBuilder({
                                       : "—"}
                                   </div>
 
+                                  {activeProduct && !activeProduct.noWifi && (
+                                    <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-teal-50 border border-teal-100 rounded-lg text-[10px] font-black text-teal-850 cursor-pointer hover:bg-teal-100/60 transition-all select-none shrink-0">
+                                      <input
+                                        type="checkbox"
+                                        checked={m.wifiEnabled !== false}
+                                        onChange={(e) =>
+                                          updateModuleField(
+                                            room.id,
+                                            board.id,
+                                            m.id,
+                                            "wifiEnabled",
+                                            e.target.checked
+                                          )
+                                        }
+                                        className="w-3.5 h-3.5 rounded border-gray-300 text-teal-600 focus:ring-teal-400 cursor-pointer"
+                                      />
+                                      <span>WiFi (+₹3,500)</span>
+                                    </label>
+                                  )}
+
                                   <div className="flex items-center gap-1.5">
                                     <button
                                       onClick={() =>
@@ -931,8 +905,7 @@ export function QuoteBuilder({
       {/* Document print window trigger */}
       {showPrint && (
         <PrintView
-          quote={{ ...customer, rooms, wifiEnabled }}
-          wifiEnabled={wifiEnabled}
+          quote={{ ...customer, rooms, wifiEnabled: true }}
           products={products}
           onClose={() => setShowPrint(false)}
         />
