@@ -92,7 +92,7 @@ export function PrintView({ quote, products, onClose }: PrintViewProps) {
                   LAZY<span style={{ color: "#00BFB3" }}>NEST</span>
                 </div>
                 <div className="text-[10px] text-[#00BFB3] font-bold uppercase tracking-[3px] mt-1.5 flex items-center gap-1">
-                  <Compass className="w-3.5 h-3.5 text-[#00BFB3] animate-spin-slow" /> Premium Smart Living
+                  <Compass className="w-3.5 h-3.5 text-[#00BFB3]" /> Premium Smart Living
                 </div>
               </div>
             </div>
