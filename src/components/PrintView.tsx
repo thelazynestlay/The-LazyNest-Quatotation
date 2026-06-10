@@ -1,321 +1,321 @@
-import React, { useState, useEffect } from "react";
 import { Quote, Product } from "../types";
-import { TEAL } from "../data";
-import { Plus, Settings, Search, Trash2, Copy, Edit, Home, Sparkles, Lock, Unlock, Eye, EyeOff } from "lucide-react";
+import { TERMS, calcCurtainCost } from "../data";
+import { Printer, X, Download, ShieldCheck, HeartHandshake, MapPin, Globe, Mail, Phone, Compass, Info } from "lucide-react";
+import { Logo } from "./Logo";
 
-interface DashboardProps {
-  quotes: Quote[];
+interface PrintViewProps {
+  quote: Quote;
   products: Product[];
-  onNew: () => void;
-  onEdit: (q: Quote) => void;
-  onDuplicate: (q: Quote) => void;
-  onDelete: (id: string) => void;
-  onOpenAdmin: () => void;
+  onClose: () => void;
 }
 
-export function Dashboard({
-  quotes,
-  products,
-  onNew,
-  onEdit,
-  onDuplicate,
-  onDelete,
-  onOpenAdmin,
-}: DashboardProps) {
-  const [search, setSearch] = useState("");
-  const [isAdmin, setIsAdmin] = useState(() => {
-    return sessionStorage.getItem("ln3_admin_auth") === "true";
+export function PrintView({ quote, products, onClose }: PrintViewProps) {
+  // Recalculate cost metrics carefully on individual module wifi configuration
+  let productTotal = 0;
+
+  const roomSummary = (quote.rooms || []).map((room) => {
+    let roomTotal = 0;
+    const boards = (room.boards || [])
+      .filter((board) => board.selected !== false)
+      .map((board) => {
+        let boardCost = 0;
+        if (board.isCurtain) {
+          boardCost = calcCurtainCost(board.trackLengthFt) * (board.qty || 1);
+        } else {
+          const moduleCosts = (board.modules || []).map((m) => {
+            const p = products.find((x) => x.id === m.productId);
+            const isWifi = p && !p.noWifi && m.wifiEnabled !== false;
+            const unitPrice = p ? (isWifi ? p.price + 3500 : p.price) : 0;
+            return unitPrice * (m.qty || 1);
+          });
+          boardCost = moduleCosts.reduce((s, c) => s + c, 0) * (board.qty || 1);
+        }
+        roomTotal += boardCost;
+        return { ...board, boardCost };
+      });
+    productTotal += roomTotal;
+    return { ...room, boards, roomTotal };
   });
-  const [password, setPassword] = useState("");
-  const [errorHeader, setErrorHeader] = useState("");
-  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = () => {
-      const auth = sessionStorage.getItem("ln3_admin_auth") === "true";
-      if (auth !== isAdmin) {
-        setIsAdmin(auth);
-      }
-    };
-    checkAuth();
-    window.addEventListener("focus", checkAuth);
-    return () => window.removeEventListener("focus", checkAuth);
-  }, [isAdmin]);
-
-  const handleVerifyAdmin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === "Lazynest@123") {
-      setIsAdmin(true);
-      sessionStorage.setItem("ln3_admin_auth", "true");
-      setErrorHeader("");
-      setShowPasswordPrompt(false);
-    } else {
-      setErrorHeader("Invalid Admin password credentials.");
-    }
-  };
-
-  const handleLogoutAdmin = () => {
-    setIsAdmin(false);
-    sessionStorage.removeItem("ln3_admin_auth");
-    setPassword("");
-  };
-
-  const filtered = quotes.filter((q) => {
-    const rawSearch = search.toLowerCase();
-    return (
-      q.customerName.toLowerCase().includes(rawSearch) ||
-      (q.projectName && q.projectName.toLowerCase().includes(rawSearch)) ||
-      q.quoteNumber.toLowerCase().includes(rawSearch)
-    );
-  });
+  const installation = productTotal * 0.1;
+  const gst = (productTotal + installation) * 0.18;
+  const grandTotal = productTotal + installation + gst;
 
   const fmtINR = (n: number) => {
     return "₹" + Math.round(n).toLocaleString("en-IN");
   };
 
+  const hasContent = roomSummary.some((r) => r.boards && r.boards.length > 0);
+
   return (
-    <div className="space-y-6">
-      {/* Upper Brand Card */}
-      <div
-        className="rounded-3xl text-white p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl relative overflow-hidden"
-        style={{ background: "#111111" }}
-      >
-        <div className="relative z-10 space-y-1">
-          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: TEAL }}>
-            LAZYNEST HOME AUTOMATION
-          </p>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-2">
-            Quotation Dashboard <Sparkles className="w-6 h-6 text-teal-300 animate-pulse" />
-          </h1>
-          <p className="text-gray-400 text-sm max-w-xl font-medium">
-            Configure premium Elite & Touch smart switch boards, curtain motorized boards, and accessory modules for luxury home automation projects.
-          </p>
-        </div>
-        <div className="flex gap-2.5 flex-wrap relative z-10 w-full md:w-auto">
+    <div className="fixed inset-0 bg-black/90 z-[100] overflow-auto p-4 md:p-8 flex flex-col items-center select-text">
+      <div className="w-full max-w-4xl space-y-5 animate-fadeIn">
+        {/* Controls block with premium brand teal color download button */}
+        <div className="flex gap-3 justify-end no-print w-full bg-neutral-950 p-4 rounded-2xl border border-neutral-800 shadow-xl">
           <button
-            onClick={onOpenAdmin}
-            className="flex-1 md:flex-none justify-center items-center inline-flex gap-2 rounded-xl text-xs font-semibold px-4 py-2.5 bg-white/10 hover:bg-white/15 border border-white/20 text-white transition-all cursor-pointer"
+            onClick={() => window.print()}
+            className="px-6 py-3 text-xs font-black bg-[#00BFB3] text-white rounded-xl hover:bg-[#007A73] flex items-center gap-2 cursor-pointer shadow-md transition-all hover:scale-[1.01]"
           >
-            <Settings className="w-4 h-4" /> Admin Catalog
+            <Download className="w-4 h-4 stroke-[2.5]" /> Save & Download Quote (PDF)
           </button>
           <button
-            onClick={onNew}
-            className="flex-1 md:flex-none justify-center items-center inline-flex gap-2 rounded-xl text-xs font-bold px-5 py-2.5 text-black hover:brightness-110 shadow-lg transition-all cursor-pointer"
-            style={{ background: TEAL }}
+            onClick={onClose}
+            className="px-5 py-3 text-xs font-bold bg-neutral-900 border border-neutral-800 text-neutral-300 rounded-xl hover:bg-neutral-800 flex items-center gap-1.5 cursor-pointer transition-all"
           >
-            <Plus className="w-4 h-4" /> New Quote
+            <X className="w-4 h-4" /> Close Preview
           </button>
         </div>
-        {/* Subtle decorative background gradient */}
-        <div className="absolute right-0 top-0 w-80 h-80 rounded-full bg-teal-500/10 blur-[100px] pointer-events-none" />
-      </div>
 
-      {/* Admin Session Active Banner */}
-      {isAdmin && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-teal-50 border border-teal-100 rounded-2xl gap-3 animate-fadeIn">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-teal-500 animate-ping shrink-0" />
-            <p className="text-xs font-bold text-teal-850">
-              Admin Mode: Viewing and managing all saved client specifications.
-            </p>
-          </div>
-          <button
-            onClick={handleLogoutAdmin}
-            className="text-[10px] font-black uppercase text-gray-500 hover:text-red-500 transition-all cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-xl shadow-sm self-start sm:self-auto"
+        {/* Printable Root A4 Document */}
+        <div
+          id="print-root"
+          className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 print:rounded-none print:shadow-none print:border-none w-full print:m-0"
+          style={{
+            fontFamily: "'Segoe UI', 'Inter', Arial, sans-serif",
+            fontSize: "11px",
+            color: "#1E293B",
+            lineHeight: "1.5",
+          }}
+        >
+          {/* Header Theme - Luxury Premium Brand Obsidian Black */}
+          <div
+            className="text-white p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between flex-wrap gap-6 border-b-4 border-[#00BFB3]"
+            style={{ background: "#111111" }}
           >
-            Lock Session
-          </button>
-        </div>
-      )}
-
-      {/* Admin Only: Search & saved quotations */}
-      {isAdmin ? (
-        <div className="space-y-6">
-          {/* Global Lookup Field */}
-          <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filter saved quotations by client name, project details or quote tag..."
-              className="w-full bg-white border border-gray-200/80 rounded-2xl pl-10 pr-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:ring-1 focus:ring-teal-400 focus:border-teal-400 focus:outline-none shadow-sm transition-all"
-            />
-          </div>
-
-          {/* Quotations List */}
-          {filtered.length === 0 ? (
-            <div className="bg-white rounded-2xl p-16 text-center border border-gray-100 shadow-sm space-y-5">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-inner"
-                style={{ background: TEAL + "15" }}
-              >
-                <Home className="w-8 h-8" style={{ color: TEAL }} />
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 bg-neutral-900/50 rounded-2xl border border-neutral-800 shadow-inner">
+                <Logo showText={false} className="h-12 w-auto text-white" />
               </div>
-              <div className="space-y-1">
-                <p className="text-gray-800 font-black text-lg">No automated estimates found</p>
-                <p className="text-sm text-gray-400 max-w-sm mx-auto font-medium">
-                  Start by building your first switchboard-to-room modular configuration and print professional PDFs instantly.
+              <div className="w-[1.5px] h-12 bg-neutral-800 opacity-40" />
+              <div>
+                <div className="text-xl font-black tracking-widest leading-none">
+                  LAZY<span style={{ color: "#00BFB3" }}>NEST</span>
+                </div>
+                <div className="text-[10px] text-[#00BFB3] font-bold uppercase tracking-[3px] mt-1.5 flex items-center gap-1">
+                  <Compass className="w-3.5 h-3.5 text-[#00BFB3] animate-spin-slow" /> Premium Smart Living
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-left md:text-right space-y-1">
+              <div className="text-xs text-neutral-400 font-bold uppercase tracking-wider">
+                Home Automation Estimate
+              </div>
+              <div className="text-base font-black tracking-tight" style={{ color: "#00BFB3" }}>
+                {quote.quoteNumber}
+              </div>
+              <div className="text-[10px] text-neutral-400 font-medium">
+                Quotation Date: <span className="text-white font-bold">{quote.date}</span>
+              </div>
+              {quote.salesExecutive && (
+                <div className="text-[10px] text-neutral-400 font-medium">
+                  Prepared by: <span className="text-white font-bold">{quote.salesExecutive}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Client Details Section */}
+          <div className="p-8 bg-slate-50 border-b border-gray-200 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 print:grid-cols-2">
+            {[
+              { label: "Client Name", val: quote.customerName || "—" },
+              { label: "Contact No", val: quote.mobile || "—" },
+              { label: "Site Location Address", val: quote.siteAddress || "—" },
+              { label: "Project Name", val: quote.projectName || "—" },
+            ].map((detail) => (
+              <div
+                key={detail.label}
+                className="bg-white border border-gray-200/80 rounded-2xl p-4 flex flex-col justify-center space-y-1 shadow-sm transition-all hover:border-[#00BFB3]/30"
+              >
+                <span className="text-[8px] text-[#007A73] uppercase tracking-widest font-black leading-none pb-0.5">
+                  {detail.label}
+                </span>
+                <span className="text-xs font-bold text-slate-800 tracking-tight leading-normal overflow-ellipsis overflow-hidden">
+                  {detail.val}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* BOQ Specifications */}
+          <div className="p-8 space-y-5">
+            <div className="flex items-center gap-2 border-b-2 border-neutral-200 pb-2">
+              <div className="w-1.5 h-4 bg-[#00BFB3] rounded-full" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-[#111111] leading-none">
+                Configured Bill of Quantities (BOQ)
+              </h3>
+            </div>
+
+            {!hasContent ? (
+              <div className="text-center py-12 font-bold text-gray-400 text-xs">
+                No active devices configured in this document.
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-slate-100 rounded-2xl shadow-sm">
+                <table className="w-full text-left border-collapse text-[10px]">
+                  <thead>
+                    <tr className="bg-[#111111] text-white font-bold tracking-wider uppercase border-b border-neutral-900">
+                      <th className="py-3.5 px-4 min-w-[120px]">Room Area</th>
+                      <th className="py-3.5 px-3 w-[70px]">SB No.</th>
+                      <th className="py-3.5 px-4 min-w-[140px]">Board Description</th>
+                      <th className="py-3.5 px-5 min-w-[220px]">Touch Modular Formula</th>
+                      <th className="py-3.5 px-3 text-center w-[60px]">Size</th>
+                      <th className="py-3.5 px-3 text-center w-[60px]">Qty</th>
+                      <th className="py-3.5 px-4 w-[140px]">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {roomSummary.map((room) => {
+                      if (!room.boards || room.boards.length === 0) return null;
+                      return room.boards.map((board, bIdx) => {
+                        const descriptionList = board.isCurtain
+                          ? `Motorized Curtain board — tracks segment: ${board.trackLengthFt || "0"}ft (Includes Motor kit & rail setups)`
+                          : (board.modules || [])
+                              .map((m) => {
+                                const p = products.find((x) => x.id === m.productId);
+                                if (!p) return "";
+                                const isWifiEnabled = p.noWifi || m.wifiEnabled === false ? "" : " (WiFi)";
+                                return `${p.displayName}${isWifiEnabled} [x${m.qty}]`;
+                              })
+                              .filter(Boolean)
+                              .join(" + ");
+
+                        const totalSize = board.isCurtain
+                          ? "—"
+                          : (board.modules || []).reduce((sum, m) => {
+                              const p = products.find((x) => x.id === m.productId);
+                              return sum + (p ? p.size * m.qty : 0);
+                            }, 0);
+
+                        return (
+                          <tr
+                            key={board.id}
+                            className={`border-b border-slate-50 transition-colors ${
+                              bIdx % 2 === 0 ? "bg-white" : "bg-slate-50/20"
+                            }`}
+                          >
+                            {bIdx === 0 && (
+                              <td
+                                rowSpan={room.boards.length}
+                                className="py-3 px-4 font-black text-[11px] text-[#007A73] align-middle border-r border-[#EFFDFB] bg-[#EFFDFB]"
+                              >
+                                {room.name}
+                              </td>
+                            )}
+                            <td className="py-3 px-3 font-mono font-bold text-slate-500">{board.sbNo}</td>
+                            <td className="py-3 px-4 text-slate-700 font-bold">{board.description || "—"}</td>
+                            <td className="py-3 px-5 font-semibold text-slate-800 leading-relaxed">
+                              {descriptionList || "—"}
+                            </td>
+                            <td className="py-3 px-3 text-center font-bold text-slate-400">
+                              {typeof totalSize === "number" && totalSize > 0 ? `${totalSize}M` : "—"}
+                            </td>
+                            <td className="py-3 px-3 text-center font-black text-slate-800 text-[11px]">
+                              {board.qty || 1}
+                            </td>
+                            <td className="py-3 px-4 text-slate-400 font-semibold italic">
+                              {board.remarks || "—"}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Pricing Detailed Summary Block - Left aligned 10 Years Warranty Badge, Right Aligned Price calculations */}
+          <div className="px-8 pb-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+            {/* Minimalist Premium 10 Years Warranty Badge */}
+            <div className="flex items-center gap-3.5 bg-neutral-50 p-4.5 rounded-2xl border border-neutral-200/80 max-w-sm w-full sm:w-auto">
+              <div className="p-2.5 bg-[#00BFB3]/10 text-[#007A73] rounded-xl flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-6 h-6 stroke-[2.5]" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-xs font-black tracking-wider uppercase text-slate-800">
+                  10 Years Warranty
+                </div>
+                <p className="text-[10px] leading-relaxed text-slate-500 font-semibold">
+                  Elite comprehensive 10-year replacement warranty is fully standard on all smart touch modular boards.
                 </p>
               </div>
-              <button
-  onClick={() => window.print()}
-  className="px-5 py-2.5 text-xs font-bold bg-white text-black rounded-xl hover:bg-gray-100 flex items-center gap-2 cursor-pointer shadow-sm"
->
-  <Printer className="w-4 h-4" /> Save as PDF
-</button><
-                style={{ background: TEAL }}
-              >
-                <Plus className="w-4 h-4 inline mr-1" /> Create First Quotation
-              </button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {filtered.map((quote) => (
-                <div
-                  key={quote.id}
-                  className="bg-white rounded-2xl p-4 md:p-5 border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all flex flex-col md:flex-row items-start md:items-center gap-4 justify-between"
-                >
-                  <div className="space-y-1.5 min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-extrabold text-gray-900 tracking-tight text-base">
-                        {quote.customerName || "Draft Client Estimate"}
-                      </span>
-                      <span
-                        className="text-[9px] px-2 py-0.5 rounded-full font-black text-white uppercase tracking-wider"
-                        style={{ background: TEAL }}
-                      >
-                        {quote.quoteNumber}
-                      </span>
-                    </div>
-                    <p className="text-xs font-semibold text-gray-400 flex items-center gap-2 flex-wrap">
-                      <span className="text-gray-500 font-bold">{quote.projectName || "Standard Apartment"}</span>
-                      <span className="w-1 h-1 rounded-full bg-gray-300" />
-                      <span>{quote.date}</span>
-                    </p>
-                  </div>
 
-                  <div className="flex items-center gap-6 justify-between w-full md:w-auto md:border-l md:border-gray-100 md:pl-6">
-                    <div className="text-left md:text-right shrink-0">
-                      <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-0.5">Grand Total</div>
-                      <div className="text-lg font-black tracking-tight" style={{ color: TEAL }}>
-                        {fmtINR(quote.grandTotal || 0)}
-                      </div>
+            {/* Price Calculations in Luxury Obsidian Black Theme */}
+            <div className="w-full sm:w-[380px] bg-[#111111] text-white rounded-2xl overflow-hidden shadow-lg border border-neutral-800 shrink-0">
+              <div className="p-6 space-y-3">
+                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-[#94A3B8]">
+                  <span>Equipment Total</span>
+                  <span className="font-extrabold text-white">{fmtINR(productTotal)}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-[#94A3B8]">
+                  <span>Installation & Setup (10%)</span>
+                  <span className="font-extrabold text-white">{fmtINR(installation)}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-[#94A3B8]">
+                  <span>GST Taxation (18%)</span>
+                  <span className="font-extrabold text-white">{fmtINR(gst)}</span>
+                </div>
+                
+                <div className="border-t border-neutral-800 pt-4 flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] text-[#00BFB3] uppercase tracking-widest font-black leading-none mb-1">
+                      TOTAL SUM PAYABLE
                     </div>
-
-                    <div className="flex gap-2 items-center">
-                      <button
-                        onClick={() => onEdit(quote)}
-                        className="p-2 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
-                        title="Edit Estimate"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onDuplicate(quote)}
-                        className="p-2 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
-                        title="Clone Estimate"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => quote.id && onDelete(quote.id)}
-                        className="p-2 border border-red-100 text-red-500 bg-red-50/50 rounded-xl hover:bg-red-50 hover:text-red-700 active:scale-95 transition-all cursor-pointer"
-                        title="Delete Estimate"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                    <div className="text-[8px] text-neutral-400 font-semibold">
+                      (All hardware, setup & taxes)
                     </div>
                   </div>
+                  <div className="text-2xl font-black text-[#00BFB3]">
+                    {fmtINR(grandTotal)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Terms & Conditions */}
+          <div className="p-8 bg-slate-50 border-t border-gray-200">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#007A73] mb-4 flex items-center gap-1.5">
+              <Info className="w-4 h-4 text-[#007A73]" /> Standard Terms & Conditions
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+              {TERMS.map((t, idx) => (
+                <div key={idx} className="flex gap-2.5 items-start text-slate-500 text-[10px] font-semibold leading-relaxed">
+                  <span className="font-extrabold shrink-0 text-[#007A73]">
+                    {idx + 1}.
+                  </span>
+                  <span>{t}</span>
                 </div>
               ))}
             </div>
-          )}
-        </div>
-      ) : (
-        /* Customer Welcoming Workspace (Hides clients lists) */
-        <div className="bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-sm text-center space-y-6 max-w-2xl mx-auto mt-6">
-          <div className="w-16 h-16 rounded-3xl flex items-center justify-center mx-auto shadow-sm bg-teal-50" style={{ color: TEAL }}>
-            <Sparkles className="w-8 h-8" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-extrabold text-gray-950 tracking-tight">
-              Create Smart Switch Board BOQs
-            </h2>
-            <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed font-semibold">
-              Interactive workspace for customers and partners. Build premium, wifi-ready configurations utilizing physical module templates, custom socket counts, and automated installation pricing.
-            </p>
-          </div>
-          <div>
-            <button
-              onClick={onNew}
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-black text-black rounded-xl hover:brightness-110 shadow-lg active:scale-95 transition-all cursor-pointer"
-              style={{ background: TEAL }}
-            >
-              <Plus className="w-4 h-4" /> Start Custom Proposal
-            </button>
           </div>
 
-          <div className="border-t border-gray-100 pt-6 mt-6">
-            {!showPasswordPrompt ? (
-              <button
-                onClick={() => setShowPasswordPrompt(true)}
-                className="text-[10px] font-bold text-gray-400 hover:text-gray-600 inline-flex items-center gap-1.5 transition-all cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-150"
-              >
-                <Lock className="w-3.5 h-3.5" /> Supervisor Access (Protected Estimates)
-              </button>
-            ) : (
-              <form onSubmit={handleVerifyAdmin} className="max-w-xs mx-auto space-y-2.5">
-                <div className="text-[9px] text-gray-400 uppercase tracking-widest font-black">
-                  Developer / Admin Verification
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setErrorHeader("");
-                    }}
-                    placeholder="Enter supervisor password..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-3 pr-10 py-2 text-xs focus:ring-1 focus:ring-teal-400 focus:border-teal-400 focus:outline-none font-semibold text-gray-800"
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-                {errorHeader && (
-                  <p className="text-[10px] font-bold text-red-500 mt-1">{errorHeader}</p>
-                )}
-                <div className="flex gap-1.5 justify-center">
-                  <button
-                    type="submit"
-                    className="text-[10px] font-black uppercase bg-gray-950 text-white hover:bg-gray-800 transition-colors px-3 py-1.5 rounded-lg cursor-pointer"
-                  >
-                    Unlock
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPasswordPrompt(false);
-                      setPassword("");
-                      setErrorHeader("");
-                    }}
-                    className="text-[10px] font-black uppercase bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors px-3 py-1.5 rounded-lg cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            )}
+          {/* Document Footer info in Obsidian Black */}
+          <div className="bg-[#111111] p-6 px-8 text-slate-300/80 text-[10px] font-semibold flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-t border-neutral-800">
+            <div className="flex items-center gap-2 flex-wrap">
+              <MapPin className="w-3.5 h-3.5 text-[#00BFB3] shrink-0" />
+              <span>
+                LazyNest Home Automation · 715, Dalnex, Solitaire Business hub, Balewadi High street road, Baner, Pune · GST: 24AASFD4198E1Z6
+              </span>
+            </div>
+            
+            <div className="text-[#00BFB3] font-bold flex flex-wrap gap-x-5 gap-y-1.5 shrink-0">
+              <a href="https://www.thelazynest.com" className="flex items-center gap-1 hover:underline">
+                <Globe className="w-3.5 h-3.5" /> www.thelazynest.com
+              </a>
+              <a href="mailto:hello@thelazynest.com" className="flex items-center gap-1 hover:underline">
+                <Mail className="w-3.5 h-3.5" /> hello@thelazynest.com
+              </a>
+              <span className="flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5" /> +91 7874433388
+              </span>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
