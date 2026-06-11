@@ -102,7 +102,7 @@ export function Dashboard({
             Quotation Dashboard <Sparkles className="w-6 h-6 text-teal-300 animate-pulse" />
           </h1>
           <p className="text-gray-400 text-sm max-w-xl font-medium">
-            Configure premium Elite & Touch smart switch boards, curtain motorized boards, and accessory modules for luxury home automation projects.
+            Configure premium Elite Touch Smart switch boards, curtain motorized boards, and accessory modules for luxury home automation projects.
           </p>
         </div>
         <div className="flex gap-2.5 flex-wrap relative z-10 w-full md:w-auto">
